@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Product from "../model/product.model";
+import cloudinary from "../config/cloudinary";
 
 /**
  * @swagger
@@ -32,6 +33,26 @@ import Product from "../model/product.model";
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
+const uploadToCloudinary = (
+    buffer: Buffer
+): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                folder: "products",
+            },
+            (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            }
+        );
+
+        uploadStream.end(buffer);
+    });
+};
 export const getProduct = async (req: Request, res: Response) => {
   try {
     const products = await Product.find();
@@ -165,18 +186,27 @@ export const newProduct = async (
 
     if (!name || !category || price === undefined) {
       return res.status(400).json({
-        message: "name, category, price required",
+        message: "name, category, price,image required",
       });
     }
+    if (!req.file) {
+            return res.status(400).json({
+                message: "Product image is required",
+            });
+        }
+ const uploadResult = await uploadToCloudinary(
+            req.file.buffer
+        );
 
     const product = await Product.create({
       name,
       category,
       price,
+      imageUrl: uploadResult.secure_url,
     });
 
     return res.status(201).json({
-      message: "Product Created",
+      message: "Product created successfully",
       product,
     });
   } catch (error) {
