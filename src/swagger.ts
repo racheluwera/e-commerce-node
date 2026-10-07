@@ -22,7 +22,7 @@ const swaggerOptions: swaggerJSDoc.Options = {
 
     servers: [
       {
-        url: `http://localhost:${PORT}`,
+        url: process.env.BASE_URL,
         description: "Local development server",
       },
     ],
