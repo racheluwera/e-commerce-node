@@ -5,6 +5,8 @@ import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./swagger";
 import authRoutes from "./routes/auth.routes";
 import productRoutes from "./routes/product.router";
+import cartRoutes from "./routes/cart.routes";
+import orderRoutes from "./routes/order.routes";
 import { errorHandler } from "./middleware/error.middleware";
 import { connectDB } from "./config/database";
 
@@ -54,6 +56,8 @@ app.get("/", (req, res) => {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api", productRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);

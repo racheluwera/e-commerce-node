@@ -1,16 +1,14 @@
 import { transporter } from"../config/mail";
 import {welcomeEmailTemplate } from "../templates/welcome.templates";
 const sendEmail = async (to: string, subject: string, html: string) =>{
-    console.log("Email password: \n", process.env.EMAIL_PASSWORD);
-    console.log("Email User: \n", process.env.EMAIL_USER);
     try{
-        await transporter.sendMail({
-            from:`"Node Auth App" <${process.env.EMAIL_USER}>`,
+        const info = await transporter.sendMail({
+            from:`"Node Auth App" <${process.env.EMAIL_SENDER || process.env.EMAIL_USER}>`,
             to,
             subject,
             html
             })
-    
+        console.log("Email sent successfully to:", to, "MessageId:", info.messageId);
     }catch (error){
         console.error('error sending email:\n',error);
     }
