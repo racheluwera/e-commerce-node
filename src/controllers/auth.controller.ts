@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../model/User.model";
-import { sendWelcomeEmail } from "../service/emailService";
+import { sendWelcomeEmail, sendResetCodeEmail } from "../service/emailService";
 
 /**
  * @swagger
@@ -187,5 +187,131 @@ export const login = async (req: Request, res: Response) => {
         return res.status(500).json({
             message: "Server error",
         });
+    }
+};
+
+/**
+ * @swagger
+ * /api/auth/forgot-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Request a password reset OTP
+ *     description: Sends a 6-digit OTP to the user's email. Valid for 10 minutes.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *           example:
+ *             email: rachel@gmail.com
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+export const forgotPassword = async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const resetCodeExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+        user.resetCode = resetCode;
+        user.resetCodeExpiry = resetCodeExpiry;
+        await user.save();
+
+        await sendResetCodeEmail(user.email, resetCode);
+
+        return res.status(200).json({ message: "Password reset OTP sent to your email" });
+    } catch (error) {
+        console.error("Forgot password error:", error);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
+
+/**
+ * @swagger
+ * /api/auth/reset-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Reset password using OTP
+ *     description: Verifies the OTP and updates the user's password.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, code, newPassword]
+ *             properties:
+ *               email:
+ *                 type: string
+ *               code:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *           example:
+ *             email: rachel@gmail.com
+ *             code: "123456"
+ *             newPassword: NewPassword123!
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       400:
+ *         description: Invalid or expired OTP
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
+export const resetPassword = async (req: Request, res: Response) => {
+    try {
+        const { email, code, newPassword } = req.body;
+
+        if (!email || !code || !newPassword) {
+            return res.status(400).json({ message: "Email, code and newPassword are required" });
+        }
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.resetCode !== code) {
+            return res.status(400).json({ message: "Invalid OTP code" });
+        }
+
+        if (!user.resetCodeExpiry || user.resetCodeExpiry < new Date()) {
+            return res.status(400).json({ message: "OTP has expired, request a new one" });
+        }
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.resetCode = undefined;
+        user.resetCodeExpiry = undefined;
+        await user.save();
+
+        return res.status(200).json({ message: "Password reset successfully" });
+    } catch (error) {
+        console.error("Reset password error:", error);
+        return res.status(500).json({ message: "Server error" });
     }
 };
