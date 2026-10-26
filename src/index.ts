@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth.routes";
 import productRoutes from "./routes/product.router";
 import cartRoutes from "./routes/cart.routes";
 import orderRoutes from "./routes/order.routes";
+import adminRoutes from "./routes/admin.routes";
 import { errorHandler } from "./middleware/error.middleware";
 import { connectDB } from "./config/database";
 
@@ -58,6 +59,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);

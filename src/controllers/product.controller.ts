@@ -135,20 +135,30 @@ export const getProductById = async (
  * /api/products:
  *   post:
  *     tags: [Products]
- *     summary: Create a product
- *     description: Adds a new product to the catalogue.
+ *     summary: Create a product (admin only)
+ *     description: Adds a new product to the catalogue. Requires the admin role. Use multipart/form-data to upload an image.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/CreateProductRequest'
- *           example:
- *             name: Laptop
- *             category: electronics
- *             price: 850000
+ *             type: object
+ *             required: [name, category, price, image]
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Laptop
+ *               category:
+ *                 type: string
+ *                 example: electronics
+ *               price:
+ *                 type: number
+ *                 example: 850000
+ *               image:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       201:
  *         description: Product created successfully
@@ -157,15 +167,19 @@ export const getProductById = async (
  *             schema:
  *               $ref: '#/components/schemas/ProductResponse'
  *       400:
- *         description: name, category or price missing
+ *         description: name, category, price or image missing
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
- *             example:
- *               message: "name, category, price required"
  *       401:
  *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - admin role required
  *         content:
  *           application/json:
  *             schema:
@@ -221,8 +235,8 @@ export const newProduct = async (
  * /api/products/{id}:
  *   put:
  *     tags: [Products]
- *     summary: Update a product
- *     description: Partially updates a product. Only the supplied fields change.
+ *     summary: Update a product (admin only)
+ *     description: Partially updates a product. Requires the admin role. Only the supplied fields change.
  *     parameters:
  *       - in: path
  *         name: id
@@ -250,6 +264,12 @@ export const newProduct = async (
  *               $ref: '#/components/schemas/ProductResponse'
  *       401:
  *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - admin role required
  *         content:
  *           application/json:
  *             schema:
@@ -305,7 +325,8 @@ export const updateProduct = async (
  * /api/products/{id}:
  *   delete:
  *     tags: [Products]
- *     summary: Delete a product
+ *     summary: Delete a product (admin only)
+ *     description: Requires the admin role.
  *     parameters:
  *       - in: path
  *         name: id
@@ -325,6 +346,12 @@ export const updateProduct = async (
  *               $ref: '#/components/schemas/ProductResponse'
  *       401:
  *         description: Unauthorized - missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - admin role required
  *         content:
  *           application/json:
  *             schema:

@@ -20,7 +20,7 @@ export const welcomeEmailTemplate = (name: string) => `
                 <span style="color: #ffffff; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;">E-Commerce</span>
               </div>
               <h1 style="margin: 0; color: #ffffff; font-size: 26px; font-weight: 700; line-height: 1.3;">
-                Welcome, ${name}! 🎉
+                Welcome, ${name}! 
               </h1>
               <p style="margin: 12px 0 0; color: #94a3b8; font-size: 15px;">Your account has been created successfully</p>
             </td>

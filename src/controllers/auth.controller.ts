@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { User } from "../model/User.model";
 import { sendWelcomeEmail, sendResetCodeEmail } from "../service/emailService";
+import { signToken } from "../utils/jwt";
 
 /**
  * @swagger
@@ -77,6 +77,7 @@ export const register = async (req: Request, res: Response) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                role: user.role,
             },
         });
     } catch (error) {
@@ -163,16 +164,11 @@ export const login = async (req: Request, res: Response) => {
             });
         }
 
-        const token = jwt.sign(
-            {
-                userId: user._id.toString(),
-                role: "user",
-            },
-            process.env.JWT_SECRET as string,
-            {
-                expiresIn: "1d",
-            }
-        );
+        const role = user.role || "user";
+        const token = signToken({
+            userId: user._id.toString(),
+            role,
+        });
 
         return res.status(200).json({
             message: "Login successful",
@@ -181,6 +177,7 @@ export const login = async (req: Request, res: Response) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                role,
             },
         });
     } catch (error) {

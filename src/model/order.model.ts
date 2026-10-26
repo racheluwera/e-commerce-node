@@ -8,7 +8,19 @@ export interface IOrderItem {
   quantity: number;
 }
 
-export type OrderStatus = "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+export const ORDER_STATUSES = [
+  "PENDING",
+  "PROCESSING",
+  "SHIPPED",
+  "DELIVERED",
+  "CANCELLED",
+] as const;
+
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+export const isOrderStatus = (value: unknown): value is OrderStatus =>
+  typeof value === "string" &&
+  (ORDER_STATUSES as readonly string[]).includes(value);
 
 export interface IOrder extends Document {
   user: mongoose.Types.ObjectId;

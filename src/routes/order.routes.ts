@@ -4,7 +4,6 @@ import {
   createOrder,
   getMyOrders,
   getOrderById,
-  updateOrderStatus,
   cancelOrder,
 } from "../controllers/order.controller";
 
@@ -66,40 +65,6 @@ import {
 
 /**
  * @swagger
- * /api/orders/{id}/status:
- *   put:
- *     tags: [Orders]
- *     summary: Update order status
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [status]
- *             properties:
- *               status:
- *                 type: string
- *                 enum: [PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED]
- *     responses:
- *       200:
- *         description: Order status updated
- *       400:
- *         description: Invalid status
- *       404:
- *         description: Order not found
- */
-
-/**
- * @swagger
  * /api/orders/{id}/cancel:
  *   put:
  *     tags: [Orders]
@@ -126,7 +91,6 @@ const router = Router();
 router.post("/", authenticate, createOrder);
 router.get("/", authenticate, getMyOrders);
 router.get("/:id", authenticate, getOrderById);
-router.put("/:id/status", authenticate, updateOrderStatus);
 router.put("/:id/cancel", authenticate, cancelOrder);
 
 export default router;

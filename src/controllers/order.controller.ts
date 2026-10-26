@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { AuthRequest } from "../types";
 import { Cart } from "../model/cart.model";
-import { Order } from "../model/order.model";
+import { isOrderStatus, Order } from "../model/order.model";
 
 export const createOrder = async (req: AuthRequest, res: Response) => {
   try {
@@ -50,9 +50,8 @@ export const getOrderById = async (req: AuthRequest, res: Response) => {
 export const updateOrderStatus = async (req: AuthRequest, res: Response) => {
   try {
     const { status } = req.body;
-    const validStatuses = ["PENDING", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"];
 
-    if (!validStatuses.includes(status))
+    if (!isOrderStatus(status))
       return res.status(400).json({ message: "Invalid status" });
 
     const order = await Order.findByIdAndUpdate(
